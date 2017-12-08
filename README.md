@@ -1,6 +1,18 @@
 # Tomsk State University, Faculty of Applied Mathematics and Cybernetics, 3 year, Databases
 
-## Installing and usage OracleDB with docker
+## Repository structure
+
+```
+├── books        - Literature
+├── src          - Laboratory works
+├── schemas      - Databases shemas
+├── startup      - Initial scripts (database fixtures)
+├── tasks.md     - Tasks list
+├── .gitignore
+└── README.md
+```
+
+## Installing and usage OracleDB with Docker
 
 ### Building image
 ```
