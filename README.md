@@ -18,8 +18,7 @@
 ```
 git clone git://github.com/oracle/docker-images.git
 cd docker-images/OracleDatabase
-cp path_to_database/linuxx64_12201_database.zip .
-cd ..
+cp path_to_database/linuxx64_12201_database.zip ./12.2.0.1/linuxx64_12201_database.zip
 ./buildDockerImage.sh -v 12.2.0.1 -e
 ```
 
@@ -27,7 +26,7 @@ cd ..
 ```
 mkdir oradata
 chmod a+w oradata
-docker run --name oracle-ee -p 1521:1521 -v ./startup:/opt/oracle/scripts/startup -v ./oradata:/opt/oracle/oradata oracle/database:12.2.0.1-ee
+docker run --name oracle-ee -p 1521:1521 --shm-size 4GB -v ./startup:/opt/oracle/scripts/startup -v ./oradata:/opt/oracle/oradata oracle/database:12.2.0.1-ee
 ```
 
 ### Default username/password
@@ -54,3 +53,8 @@ docker exec oracle-ee ./setPassword.sh my_password
 ```
 docker exec -ti oracle-ee sqlplus pdbadmin@ORCLPDB1
 ```
+
+## Usefull tools for developing
+
+1. `./tools/dictgen.sh` - generate dictionary for autocomplete in sqlplus
+2. `rlwrap -if path_to_proj/tools/sqlplus.dict -pgreen sqlplus user/pass@server` - enable autocomplete and coloring
