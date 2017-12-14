@@ -1,432 +1,519 @@
 -- 1. Список домов по улице Дзержинского.
 
-select street,
-       house_number
-from Locations
-where street = 'Дзержинского';
+select
+  STREET,
+  HOUSE_NUMBER
+from LOCATIONS
+where STREET = 'Дзержинского';
 
 -- 2. Список домов по улице Дзержинского и  Елизаровых в формате: улица, дом.
 
-select street,
-       house_number
-from Locations
-where street = 'Дзержинского'
-  or street = 'Елизаровых';
+select
+  STREET,
+  HOUSE_NUMBER
+from LOCATIONS
+where STREET = 'Дзержинского'
+      or STREET = 'Елизаровых';
 
 -- 3. Cписок всех острых вегетарианских пицц.
 
-select product_name
-from Products
-where hot = 1
-  and vegetarian = 1
-  and category_id = 1;
+select PRODUCT_NAME
+from PRODUCTS
+where HOT = 1
+      and VEGETARIAN = 1
+      and CATEGORY_ID = 1;
 
 -- 4. Список всех острых пицц стоимостью до 500.
 
-select product_name
-from Products
-where Products.category_id = 1
-  and hot = 1
-  and price < 500;
+select PRODUCT_NAME
+from PRODUCTS
+where PRODUCTS.CATEGORY_ID = 1
+      and HOT = 1
+      and PRICE < 500;
 
 -- 5. Список всех не острых и не вегетарианских пицц стоимостью до 490.
 
-select product_name
-from Products
-where Products.category_id = 1
-  and hot = 0
-  and vegetarian = 0
-  and price < 490
-  and category_id = 1;
+select PRODUCT_NAME
+from PRODUCTS
+where PRODUCTS.CATEGORY_ID = 1
+      and HOT = 0
+      and VEGETARIAN = 0
+      and PRICE < 490
+      and CATEGORY_ID = 1;
 
 -- 6. Список домов по улице Белинского, исключая проезд Белинского, в формате: улица, дом.
 
-select street,
-       house_number
-from Locations
-where street like 'Белинского';
+select
+  STREET,
+  HOUSE_NUMBER
+from LOCATIONS
+where STREET like 'Белинского';
 
 -- 7. Список полных имен, в которых есть две “е” и нет “c”.
 
-select customer_name
-from Customers
-where customer_name like '%е%е%'
-  and customer_name not like '%с%';
+select CUSTOMER_NAME
+from CUSTOMERS
+where CUSTOMER_NAME like '%е%е%'
+      and CUSTOMER_NAME not like '%с%';
 
 -- 8. Список все улиц, на которых есть дома номер 1, 15, 16.
 
-select distinct street
-from Locations
-where house_number in ('1',
+select distinct STREET
+from LOCATIONS
+where HOUSE_NUMBER in ('1',
                        '15',
                        '16');
 
 -- 9. Список все улиц, на которых есть дома номер с 1 по 17.
 
-select distinct street
-from Locations
-where house_number between '1' and '17';
+select distinct STREET
+from LOCATIONS
+where HOUSE_NUMBER between '1' and '17';
 
 -- 10. Список все улиц, на которых нет домов номер с 10 по 30, и название которых начинается с “М” или “C”.
 
-select distinct street
-from Locations
-where house_number not between '10' and '30'
-  and (street like 'М%'
-       or street like 'С%');
+select distinct STREET
+from LOCATIONS
+where HOUSE_NUMBER not between '10' and '30'
+      and (STREET like 'М%'
+           or STREET like 'С%');
 
 -- 11. Список всех улиц, на которых есть дома не принадлежащие ни одному району.
 
-select distinct street
-from Locations
-where area_id is null;
+select distinct STREET
+from LOCATIONS
+where AREA_ID is null;
 
 -- 12. Список заказов, которые были доставлены  в сентябре 2017-го. Список должен быть отсортирован.
 
-select order_id,
-       delivery_date
-from Orders
-where TRUNC(delivery_date, 'month') = '01.09.2017'
+select
+  ORDER_ID,
+  DELIVERY_DATE
+from ORDERS
+where TRUNC(DELIVERY_DATE, 'month') = '01.09.2017'
 order by 2 asc;
 
 -- 13. Список заказов, которые были доставлены  за последние 3 месяца. Список должен быть отсортирован.
 
-select order_id,
-       delivery_date
-from Orders
-where delivery_date > add_months(current_date, -3)
+select
+  ORDER_ID,
+  DELIVERY_DATE
+from ORDERS
+where DELIVERY_DATE > add_months(current_date, -3)
 order by 2 asc;
 
 -- 14. Список заказов, которые были доставлены с 1 по 10 любого месяца. Список должен быть отсортирован.
 
-select order_id,
-       delivery_date
-from Orders
+select
+  ORDER_ID,
+  DELIVERY_DATE
+from ORDERS
 where extract(day
-              from delivery_date) between 1 and 10
-order by delivery_date asc;
+              from DELIVERY_DATE) between 1 and 10
+order by DELIVERY_DATE asc;
 
 -- 15. Список всех продуктов с их типами.
 
-select product_name,
-       categories_name
-from Products
-inner join Categories on Products.category_id = Categories.category_id;
+select
+  PRODUCT_NAME,
+  CATEGORIES_NAME
+from PRODUCTS
+  inner join CATEGORIES on PRODUCTS.CATEGORY_ID = CATEGORIES.CATEGORY_ID;
 
 -- 16. Все дома в Кировском районе.
 
-select street,
-       house_number,
-       areas_name
-from Locations
-inner join Areas on Locations.area_id = Areas.area_id
-where areas_name = 'Кировский';
+select
+  STREET,
+  HOUSE_NUMBER,
+  AREAS_NAME
+from LOCATIONS
+  inner join AREAS on LOCATIONS.AREA_ID = AREAS.AREA_ID
+where AREAS_NAME = 'Кировский';
 
 -- 17. Все дома в Кировском районе или не принадлежащие ни одному району.
 
-select areas_name,
-       street,
-       house_number
-from Locations
-left join Areas on Locations.area_id = Areas.area_id
-where areas_name = 'Кировский'
-  or locations.area_id is null;
+select
+  AREAS_NAME,
+  STREET,
+  HOUSE_NUMBER
+from LOCATIONS
+  left join AREAS on LOCATIONS.AREA_ID = AREAS.AREA_ID
+where AREAS_NAME = 'Кировский'
+      or LOCATIONS.AREA_ID is null;
 
--- 18. Все дома в Кировском районе или не принадлежащие ни одному району. Для домов, не принадлежащих ни одному району, в советующем столбце должно стоять  ‘нет’.
+-- 18. Все дома в Кировском районе или не принадлежащие ни одному району. Для домов, не принадлежащих ни одному району,
+-- в советующем столбце должно стоять  ‘нет’.
 
-select a.area_id,
-       l.area_id,
-       l.street,
-       l.house_number,
-       nvl(a.areas_name, 'нет') as areas_name
-from Areas a
-right join Locations l on l.area_id = a.area_id
-where a.areas_name = 'Кировский'
-  or l.area_id is null;
+select
+  A.AREA_ID,
+  L.AREA_ID,
+  L.STREET,
+  L.HOUSE_NUMBER,
+  nvl(A.AREAS_NAME, 'нет') as AREAS_NAME
+from AREAS A
+  right join LOCATIONS L on L.AREA_ID = A.AREA_ID
+where A.AREAS_NAME = 'Кировский'
+      or L.AREA_ID is null;
 
 -- 19. Список имён все сотрудников и с указанием имени начальника. Для начальников в соотв. Столбце выводить – ‘шеф’
 
-select e.employee_name,
-       NVL(c.employee_name, 'шеф') as chief_name
-from Employees e
-left join Employees c on e.chief_id = c.employee_id;
+select
+  E.EMPLOYEE_NAME,
+  NVL(C.EMPLOYEE_NAME, 'шеф') as CHIEF_NAME
+from EMPLOYEES E
+  left join EMPLOYEES C on E.CHIEF_ID = C.EMPLOYEE_ID;
 
 -- 20. Список всех заказов доставленных в советский район.
 
-select orders.order_id,
-       areas.areas_name
-from Orders
-inner join Locations on Locations.location_id = Orders.location_id
-inner join Areas on Areas.area_id = Locations.area_id
-where Areas.areas_name = 'Советский';
+select
+  ORDERS.ORDER_ID,
+  AREAS.AREAS_NAME
+from ORDERS
+  inner join LOCATIONS on LOCATIONS.LOCATION_ID = ORDERS.LOCATION_ID
+  inner join AREAS on AREAS.AREA_ID = LOCATIONS.AREA_ID
+where AREAS.AREAS_NAME = 'Советский';
 
 -- 21. Список всех пицц, которые были доставлены в этом месяце.
 
-select distinct Products.product_name
-from Products
-inner join Categories on Categories.category_id = Products.category_id
-inner join Order_Details on Order_Details.product_id = Products.product_id
-inner join Orders on Orders.order_id = Order_Details.order_id
-where Categories.categories_name = 'Пицца'
-  and trunc(Orders.order_date, 'month') = trunc(current_date, 'month');
+select distinct PRODUCTS.PRODUCT_NAME
+from PRODUCTS
+  inner join CATEGORIES on CATEGORIES.CATEGORY_ID = PRODUCTS.CATEGORY_ID
+  inner join ORDER_DETAILS on ORDER_DETAILS.PRODUCT_ID = PRODUCTS.PRODUCT_ID
+  inner join ORDERS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+where CATEGORIES.CATEGORIES_NAME = 'Пицца'
+      and trunc(ORDERS.ORDER_DATE, 'month') = trunc(current_date, 'month');
 
 -- 22. Список всех заказчиков, делавших заказ в октябрьском районе по улице Алтайской.
 
-select Customers.customer_name
-from Customers
-inner join Orders on Orders.customer_id = Customers.customer_id
-inner join Locations on Locations.location_id = Orders.location_id
-inner join Areas on Areas.area_id = Locations.area_id
-where Locations.street like 'Алтайская'
-  and Areas.areas_name like 'Октябрьский';
+select CUSTOMERS.CUSTOMER_NAME
+from CUSTOMERS
+  inner join ORDERS on ORDERS.CUSTOMER_ID = CUSTOMERS.CUSTOMER_ID
+  inner join LOCATIONS on LOCATIONS.LOCATION_ID = ORDERS.LOCATION_ID
+  inner join AREAS on AREAS.AREA_ID = LOCATIONS.AREA_ID
+where LOCATIONS.STREET like 'Алтайская'
+      and AREAS.AREAS_NAME like 'Октябрьский';
 
--- 23. Список всех пицц, которые были доставлены под руководствам Козлова (или им самим). В списке также должны отображаться имя курьера и район (‘нет’ – если район не известен).
+-- 23. Список всех пицц, которые были доставлены под руководствам Козлова (или им самим). В списке также должны
+-- отображаться имя курьера и район (‘нет’ – если район не известен).
 
-select distinct product_name,
-                e.employee_name,
-                nvl(Areas.areas_name, 'нет') as area
-from Products
-inner join Order_Details on Order_Details.product_id = Products.product_id
-inner join Orders on Orders.order_id = Order_Details.order_id
-inner join Categories on Products.category_id = Categories.category_id
-inner join Employees e on e.employee_id = Orders.employee_id
-left join Employees chief_e on chief_e.employee_id = e.chief_id
-inner join Locations on Orders.location_id = Locations.location_id
-inner join Areas on Locations.area_id = Areas.area_id
-where Categories.categories_name = 'Пицца'
-  and (chief_e.employee_name like '%Козлов'
-       or e.employee_name like '%Козлов');
+select distinct
+  PRODUCT_NAME,
+  E.EMPLOYEE_NAME,
+  nvl(AREAS.AREAS_NAME, 'нет') as AREA
+from PRODUCTS
+  inner join ORDER_DETAILS on ORDER_DETAILS.PRODUCT_ID = PRODUCTS.PRODUCT_ID
+  inner join ORDERS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+  inner join CATEGORIES on PRODUCTS.CATEGORY_ID = CATEGORIES.CATEGORY_ID
+  inner join EMPLOYEES E on E.EMPLOYEE_ID = ORDERS.EMPLOYEE_ID
+  left join EMPLOYEES CHIEF_E on CHIEF_E.EMPLOYEE_ID = E.CHIEF_ID
+  inner join LOCATIONS on ORDERS.LOCATION_ID = LOCATIONS.LOCATION_ID
+  inner join AREAS on LOCATIONS.AREA_ID = AREAS.AREA_ID
+where CATEGORIES.CATEGORIES_NAME = 'Пицца'
+      and (CHIEF_E.EMPLOYEE_NAME like '%Козлов'
+           or E.EMPLOYEE_NAME like '%Козлов');
 
 -- 24. Список продуктов с типом, которые заказывали вмести с острыми или вегетарианскими пиццами в этом месяце.
 
-select distinct p.product_name,
-                Categories.categories_name
-from Order_Details
-left join Products pz on (pz.hot = 1
-                          or pz.vegetarian = 1)
-and pz.product_id = Order_Details.product_id
-right join Products p on p.product_id = Order_Details.product_id
-inner join Orders on Orders.order_id = Order_Details.order_id
-inner join Categories on Categories.category_id = p.category_id
-where pz.product_id is null
-  and trunc(Orders.order_date, 'month') = trunc(current_date, 'month');
+select distinct
+  P.PRODUCT_NAME,
+  CATEGORIES.CATEGORIES_NAME
+from ORDER_DETAILS
+  left join PRODUCTS PZ on (PZ.HOT = 1
+                            or PZ.VEGETARIAN = 1)
+                           and PZ.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+  right join PRODUCTS P on P.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+  inner join ORDERS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+  inner join CATEGORIES on CATEGORIES.CATEGORY_ID = P.CATEGORY_ID
+where PZ.PRODUCT_ID is null
+      and trunc(ORDERS.ORDER_DATE, 'month') = trunc(current_date, 'month');
 
 -- 25. Найти среднюю стоимость пиццы с точность до второго знака.
 
-select round(avg(price), 2) as avg_price
-from Products
-where category_id = 1;
+select round(avg(PRICE), 2) as AVG_PRICE
+from PRODUCTS
+where CATEGORY_ID = 1;
 
--- 26. Для каждого заказа посчитать общее количество товаров в заказе, и количество позиций в заказе. Столбцы: номер заказа, общее количество, количество позиций.
+-- 26. Для каждого заказа посчитать общее количество товаров в заказе, и количество позиций в заказе. Столбцы: номер
+-- заказа, общее количество, количество позиций.
 
-select Order_Details.order_id,
-       count(Order_Details.product_id),
-       sum(Order_Details.quantity)
-from Orders
-left join Order_Details on Orders.order_id = Order_Details.order_id
-group by Order_Details.order_id;
+select
+  ORDER_DETAILS.ORDER_ID,
+  count(ORDER_DETAILS.PRODUCT_ID),
+  sum(ORDER_DETAILS.QUANTITY)
+from ORDERS
+  left join ORDER_DETAILS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+group by ORDER_DETAILS.ORDER_ID;
 
 -- 27. Для каждого заказа посчитать сумму заказа.
 
-select Orders.order_id,
-       sum(Products.price * Order_Details.quantity) as total_price
-from Orders
-left join Order_Details on Orders.order_id = Order_Details.order_id
-inner join Products on Products.product_id = Order_Details.product_id
-group by Orders.order_id;
+select
+  ORDERS.ORDER_ID,
+  sum(PRODUCTS.PRICE * ORDER_DETAILS.QUANTITY) as TOTAL_PRICE
+from ORDERS
+  left join ORDER_DETAILS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+  inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+group by ORDERS.ORDER_ID;
 
 -- 28. Для каждой пиццы найти общую сумму заказов.
 
-select product_name,
-       sum(price * quantity) as total_price
-from Order_Details
-inner join Products on Products.product_id = Order_Details.product_id
-inner join Categories on Categories.category_id = Products.category_id
-where Categories.categories_name = 'Пицца'
-group by product_name;
+select
+  PRODUCT_NAME,
+  sum(PRICE * QUANTITY) as TOTAL_PRICE
+from ORDER_DETAILS
+  inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+  inner join CATEGORIES on CATEGORIES.CATEGORY_ID = PRODUCTS.CATEGORY_ID
+where CATEGORIES.CATEGORIES_NAME = 'Пицца'
+group by PRODUCT_NAME;
 
 -- 29. Составьте отчёт по суммам заказов за последние три  месяца
 
-select Orders.order_id,
-       sum(price * quantity) as total_price
-from Orders
-inner join Order_Details on Orders.order_id = Order_Details.order_id
-inner join Products on Products.product_id = Order_Details.product_id
-where Orders.order_date > add_months(current_date, -3)
-group by Orders.order_id;
+select
+  ORDERS.ORDER_ID,
+  sum(PRICE * QUANTITY) as TOTAL_PRICE
+from ORDERS
+  inner join ORDER_DETAILS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+  inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+where ORDERS.ORDER_DATE > add_months(current_date, -3)
+group by ORDERS.ORDER_ID;
 
--- 30. Найти всех заказчиков, которые сделали заказ одного  товара на сумму не менее 3000. Отчёт должен содержать имя заказчика, номер заказа и стоимость.
+-- 30. Найти всех заказчиков, которые сделали заказ одного товара на сумму не менее 3000. Отчёт должен содержать имя
+-- заказчика, номер заказа и стоимость.
 
-select Orders.order_id,
-       Customers.customer_name,
-       sum(price * quantity) as total_price
-from Orders
-left join Order_Details on Orders.order_id = Order_Details.order_id
-left join Customers on Customers.customer_id = Orders.customer_id
-inner join Products on Products.product_id = Order_Details.product_id
-where (price * quantity) > 3000
-group by Orders.order_id,
-         Customers.customer_name
+select
+  ORDERS.ORDER_ID,
+  CUSTOMERS.CUSTOMER_NAME,
+  sum(PRICE * QUANTITY) as TOTAL_PRICE
+from ORDERS
+  left join ORDER_DETAILS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+  left join CUSTOMERS on CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
+  inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+where (PRICE * QUANTITY) > 3000
+group by ORDERS.ORDER_ID,
+  CUSTOMERS.CUSTOMER_NAME
 having count(*) = 1;
 
 -- 31. Найти всех заказчиков, которые делали заказы во всех районах.
 
-select customer_name
-from Customers
-inner join Orders on Orders.customer_id = Customers.customer_id
-inner join Locations on Locations.location_id = Orders.location_id
-inner join Areas on Areas.area_id = Locations.area_id
-group by Customers.customer_name
-having count(distinct Areas.area_id) =
-  (select count(*)
-   from Areas);
+select CUSTOMER_NAME
+from CUSTOMERS
+  inner join ORDERS on ORDERS.CUSTOMER_ID = CUSTOMERS.CUSTOMER_ID
+  inner join LOCATIONS on LOCATIONS.LOCATION_ID = ORDERS.LOCATION_ID
+  inner join AREAS on AREAS.AREA_ID = LOCATIONS.AREA_ID
+group by CUSTOMERS.CUSTOMER_NAME
+having count(distinct AREAS.AREA_ID) =
+       (
+         select count(*)
+         from AREAS);
 
+-- 32. Вывести все “чеки” (номер заказа, курьер, заказчик, стоимость заказа) для всех заказов, сделанных в кировском
+-- районе и содержащих хотя бы 1 острую пиццу.
 
-left join Order_Details on Order_Details.order_id = Orders.order_id
-left join Products on Products.product_id = Order_Details.product_id
-group by Orders.order_id
-having sum(hot) = 0;
+select
+  ORDERS.ORDER_ID,
+  EMPLOYEE_NAME,
+  CUSTOMER_NAME,
+  sum(PRODUCTS.PRICE * ORDER_DETAILS.QUANTITY) as TOTAL_PRICE
+from ORDERS
+  inner join ORDER_DETAILS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+  inner join PRODUCTS on ORDER_DETAILS.PRODUCT_ID = PRODUCTS.PRODUCT_ID and PRODUCTS.HOT = 1
+  inner join CATEGORIES on CATEGORIES.CATEGORY_ID = PRODUCTS.CATEGORY_ID
+  inner join EMPLOYEES on EMPLOYEES.EMPLOYEE_ID = ORDERS.EMPLOYEE_ID
+  inner join CUSTOMERS on CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
+  inner join LOCATIONS on LOCATIONS.LOCATION_ID = ORDERS.LOCATION_ID
+  inner join AREAS on AREAS.AREA_ID = LOCATIONS.AREA_ID
+where CATEGORIES.CATEGORIES_NAME = 'Пицца' and AREAS_NAME = 'Кировский'
+group by ORDERS.ORDER_ID, EMPLOYEES.EMPLOYEE_NAME, CUSTOMERS.CUSTOMER_NAME
+having sum(HOT) > 0;
 
--- 34. Найти сумму всех заказов сделанных по адресам, не относящимся ни к одному району. Использовать вариант решения с подзапросом.
+-- ✓ 33. Для каждого заказа, в котором есть хотя бы 1 острая пицца  посчитать стоимость напитков.
+select
+  ORDERS.ORDER_ID,
+  sum(
+      case when CATEGORY_ID = 2
+        then
+          PRICE * QUANTITY
+      else
+        0
+      end
+  ) as TOTAL_DRINKS_PRICE
+from ORDERS
+  left join ORDER_DETAILS on ORDER_DETAILS.ORDER_ID = ORDERS.ORDER_ID
+  left join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+group by ORDERS.ORDER_ID
+having sum(HOT) = 0;
 
-select sum(Products.price * Order_Details.quantity) as total_price
-from Orders
-inner join Order_Details on Order_Details.order_id = Orders.order_id
-inner join Products on Order_Details.product_id = Products.product_id
-where Orders.location_id in
-    ( select Locations.location_id
-     from Locations
-     where Locations.area_id is null );
+-- 34. Найти сумму всех заказов сделанных по адресам, не относящимся ни к одному району. Использовать вариант решения с
+-- подзапросом.
 
--- 35. Вывести номера и имена сотрудников ни разу не задержавших доставку более чем на полтора часа. Использовать вариант решения без групповых операций и DISTINCT
+select sum(PRODUCTS.PRICE * ORDER_DETAILS.QUANTITY) as TOTAL_PRICE
+from ORDERS
+  inner join ORDER_DETAILS on ORDER_DETAILS.ORDER_ID = ORDERS.ORDER_ID
+  inner join PRODUCTS on ORDER_DETAILS.PRODUCT_ID = PRODUCTS.PRODUCT_ID
+where ORDERS.LOCATION_ID in
+      (
+        select LOCATIONS.LOCATION_ID
+        from LOCATIONS
+        where LOCATIONS.AREA_ID is null);
 
-select employee_id,
-       employee_name
-from Employees
-where employee_id in
-    ( select Employees.employee_id as employee_id
-     from Employees
-     left join Orders on Employees.employee_id = Orders.employee_id
-     where (Orders.end_date + 1/24 * 1.5) > Orders.delivery_date );
+-- 35. Вывести номера и имена сотрудников ни разу не задержавших доставку более чем на полтора часа. Использовать
+-- вариант решения без групповых операций и DISTINCT
+
+select
+  EMPLOYEE_ID,
+  EMPLOYEE_NAME
+from EMPLOYEES
+where EMPLOYEE_ID in
+      (
+        select EMPLOYEES.EMPLOYEE_ID as EMPLOYEE_ID
+        from EMPLOYEES
+          left join ORDERS on EMPLOYEES.EMPLOYEE_ID = ORDERS.EMPLOYEE_ID
+        where (ORDERS.END_DATE + 1 / 24 * 1.5) > ORDERS.DELIVERY_DATE);
 
 -- 36. Найти курьера выполнившего наибольшее число заказов.
 
 select *
 from
-  ( select Employees.employee_id,
-           Employees.employee_name,
-           count(Orders.order_id) as number_of_orders
-   from Orders
-   inner join Employees on Employees.employee_id = Orders.employee_id
-   group by Employees.employee_id,
-            Employees.employee_name
-   order by number_of_orders desc)
+  (
+    select
+      EMPLOYEES.EMPLOYEE_ID,
+      EMPLOYEES.EMPLOYEE_NAME,
+      count(ORDERS.ORDER_ID) as NUMBER_OF_ORDERS
+    from ORDERS
+      inner join EMPLOYEES on EMPLOYEES.EMPLOYEE_ID = ORDERS.EMPLOYEE_ID
+    group by EMPLOYEES.EMPLOYEE_ID,
+      EMPLOYEES.EMPLOYEE_NAME
+    order by NUMBER_OF_ORDERS desc)
 where ROWNUM <= 1;
 
 -- 37. Найти курьера с наименьшим процентом заказов выполненных с задержкой.
 
 select *
 from
-  ( select Employees.employee_id,
-           Employees.employee_name,
-           (bad_orders / total_orders * 100) as orders_rate
-   from Orders
-   inner join Employees on Employees.employee_id = Orders.employee_id
-   inner join
-     ( select employee_id,
-              count(order_id) as bad_orders
-      from Orders
-      where end_date > delivery_date
-      group by employee_id ) Bad_orders on Employees.employee_id = Bad_orders.employee_id
-   inner join
-     ( select Employees.employee_id,
-              count(Orders.order_id) as total_orders
-      from Employees
-      inner join Orders on Orders.employee_id = Employees.employee_id
-      group by Employees.employee_id ) TotalOrders on TotalOrders.employee_id = Employees.employee_id
-   group by Employees.employee_id,
-            Employees.employee_name,
-            total_orders,
-            bad_orders
-   order by orders_rate asc)
+  (
+    select
+      EMPLOYEES.EMPLOYEE_ID,
+      EMPLOYEES.EMPLOYEE_NAME,
+      (BAD_ORDERS / TOTAL_ORDERS * 100) as ORDERS_RATE
+    from ORDERS
+      inner join EMPLOYEES on EMPLOYEES.EMPLOYEE_ID = ORDERS.EMPLOYEE_ID
+      inner join
+      (
+        select
+          EMPLOYEE_ID,
+          count(ORDER_ID) as BAD_ORDERS
+        from ORDERS
+        where END_DATE > DELIVERY_DATE
+        group by EMPLOYEE_ID) BAD_ORDERS on EMPLOYEES.EMPLOYEE_ID = BAD_ORDERS.EMPLOYEE_ID
+      inner join
+      (
+        select
+          EMPLOYEES.EMPLOYEE_ID,
+          count(ORDERS.ORDER_ID) as TOTAL_ORDERS
+        from EMPLOYEES
+          inner join ORDERS on ORDERS.EMPLOYEE_ID = EMPLOYEES.EMPLOYEE_ID
+        group by EMPLOYEES.EMPLOYEE_ID) TOTALORDERS on TOTALORDERS.EMPLOYEE_ID = EMPLOYEES.EMPLOYEE_ID
+    group by EMPLOYEES.EMPLOYEE_ID,
+      EMPLOYEES.EMPLOYEE_NAME,
+      TOTAL_ORDERS,
+      BAD_ORDERS
+    order by ORDERS_RATE asc)
 where ROWNUM <= 1;
 
--- 38. Для каждого курьера найти число заказов, доставленных с задержкой, как процент от числа выполненных им заказов и  процент от общего числа заказов. Отчёт должен содержать имя курьера, количество заказов, количество и процент выполненных без задержки заказов
+-- 38. Для каждого курьера найти число заказов, доставленных с задержкой, как процент от числа выполненных им заказов и
+-- процент от общего числа заказов. Отчёт должен содержать имя курьера, количество заказов, количество и процент
+-- выполненных без задержки заказов
 
-select Employees.employee_id,
-       Employees.employee_name,
-       (bad_orders / total_orders * 100) as orders_rate,
-       (total_orders /
-          (select count(*)
-           from Orders) * 100) as total_orders_rate --from Orders
-
-inner join Employees on Employees.employee_id = Orders.employee_id
-inner join
-  ( select employee_id,
-           count(order_id) as bad_orders
-   from Orders
-   where end_date > delivery_date
-   group by employee_id ) Bad_orders on Employees.employee_id = Bad_orders.employee_id
-inner join
-  ( select Employees.employee_id,
-           count(Orders.order_id) as total_orders
-   from Employees
-   inner join Orders on Orders.employee_id = Employees.employee_id
-   group by Employees.employee_id ) TotalOrders on TotalOrders.employee_id = Employees.employee_id
-group by Employees.employee_id,
-         Employees.employee_name,
-         total_orders,
-         bad_orders
-order by orders_rate asc;
+select
+  EMPLOYEES.EMPLOYEE_ID,
+  EMPLOYEES.EMPLOYEE_NAME,
+  (BAD_ORDERS / TOTAL_ORDERS * 100) as ORDERS_RATE,
+  (TOTAL_ORDERS / (
+    select count(*)
+    from ORDERS) * 100)             as TOTAL_ORDERS_RATE -- from Orders
+from ORDERS
+  inner join EMPLOYEES on EMPLOYEES.EMPLOYEE_ID = ORDERS.EMPLOYEE_ID
+  inner join
+  (
+    select
+      EMPLOYEE_ID,
+      count(ORDER_ID) as BAD_ORDERS
+    from EMPLOYEES
+    where END_DATE > DELIVERY_DATE
+    group by EMPLOYEE_ID) BAD_ORDERS on EMPLOYEES.EMPLOYEE_ID = BAD_ORDERS.EMPLOYEE_ID
+  inner join
+  (
+    select
+      EMPLOYEES.EMPLOYEE_ID,
+      count(ORDERS.ORDER_ID) as TOTAL_ORDERS
+    from EMPLOYEES
+      inner join ORDERS on ORDERS.EMPLOYEE_ID = EMPLOYEES.EMPLOYEE_ID
+    group by EMPLOYEES.EMPLOYEE_ID) TOTALORDERS on TOTALORDERS.EMPLOYEE_ID = EMPLOYEES.EMPLOYEE_ID
+group by EMPLOYEES.EMPLOYEE_ID,
+  EMPLOYEES.EMPLOYEE_NAME,
+  TOTAL_ORDERS,
+  BAD_ORDERS
+order by ORDERS_RATE asc;
 
 -- 39. Для клиента найти дату и номер самого дорогого заказа.
 
-select Orders.order_id,
-       Orders.order_date
-from Customers
-inner join Orders on Customers.customer_id = Orders.customer_id
-inner join
-  ( select o.order_id as order_id,
-           sum(price * quantity) as total_price
-   from Orders o
-   left join order_details od on o.order_id=od.order_id
-   left join products p on p.product_id=od.product_id
-   group by o.order_id ) o on o.order_id = Orders.order_id
-inner join
-  ( select c.customer_id,
-           max(total_price) as max_total_price
-   from Customers c
-   inner join Orders o on o.customer_id = c.customer_id
-   inner join
-     ( select sub_o.order_id,
-              sum(price * quantity) as total_price
-      from orders sub_o
-      left join order_details od on sub_o.order_id = od.order_id
-      left join products p on p.product_id = od.product_id
-      group by sub_o.order_id ) sub_o on sub_o.order_id = o.order_id
-   group by c.customer_id ) q on Customers.customer_id = q.customer_id
-where total_price = max_total_price
-order by Customers.customer_id asc;
+select
+  ORDERS.ORDER_ID,
+  ORDERS.ORDER_DATE
+from CUSTOMERS
+  inner join ORDERS on CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
+  inner join
+  (
+    select
+      O.ORDER_ID            as ORDER_ID,
+      sum(PRICE * QUANTITY) as TOTAL_PRICE
+    from ORDERS O
+      left join ORDER_DETAILS OD on O.ORDER_ID = OD.ORDER_ID
+      left join PRODUCTS P on P.PRODUCT_ID = OD.PRODUCT_ID
+    group by O.ORDER_ID) O on O.ORDER_ID = ORDERS.ORDER_ID
+  inner join
+  (
+    select
+      C.CUSTOMER_ID,
+      max(TOTAL_PRICE) as MAX_TOTAL_PRICE
+    from CUSTOMERS C
+      inner join ORDERS O on O.CUSTOMER_ID = C.CUSTOMER_ID
+      inner join
+      (
+        select
+          SUB_O.ORDER_ID,
+          sum(PRICE * QUANTITY) as TOTAL_PRICE
+        from ORDERS SUB_O
+          left join ORDER_DETAILS OD on SUB_O.ORDER_ID = OD.ORDER_ID
+          left join PRODUCTS P on P.PRODUCT_ID = OD.PRODUCT_ID
+        group by SUB_O.ORDER_ID) SUB_O on SUB_O.ORDER_ID = O.ORDER_ID
+    group by C.CUSTOMER_ID) Q on CUSTOMERS.CUSTOMER_ID = Q.CUSTOMER_ID
+where TOTAL_PRICE = MAX_TOTAL_PRICE
+order by CUSTOMERS.CUSTOMER_ID asc;
 
 -- 40. Для каждого старшего группы найти стоимость всех заказов, выполненных им самим или его подчинёнными.
 
-select chief_id,
-       chief_name,
-       sum(total_order_price)
+select
+  CHIEF_ID,
+  CHIEF_NAME,
+  sum(TOTAL_ORDER_PRICE)
 from
-  ( select e.employee_id as employee_id,
-           e.chief_id as chief_id,
-           c.employee_name as chief_name,
-           total_order_price
-   from Employees e
-   left join Employees c on e.chief_id = c.employee_id
-   inner join Orders on Orders.employee_id = c.employee_id
-   inner join
-     ( select o.employee_id as employee_id,
-              sum(price * quantity) as total_order_price
-      from Order_Details
-      inner join Orders o on o.order_id = Order_Details.order_id
-      inner join Products on Products.product_id = Order_Details.product_id
-      group by o.employee_id ) ord on ord.employee_id = e.employee_id )
-group by chief_id,
-         chief_name;
+  (
+    select
+      E.EMPLOYEE_ID   as EMPLOYEE_ID,
+      E.CHIEF_ID      as CHIEF_ID,
+      C.EMPLOYEE_NAME as CHIEF_NAME,
+      TOTAL_ORDER_PRICE
+    from EMPLOYEES E
+      left join EMPLOYEES C on E.CHIEF_ID = C.EMPLOYEE_ID
+      inner join ORDERS on ORDERS.EMPLOYEE_ID = C.EMPLOYEE_ID
+      inner join
+      (
+        select
+          O.EMPLOYEE_ID         as EMPLOYEE_ID,
+          sum(PRICE * QUANTITY) as TOTAL_ORDER_PRICE
+        from ORDER_DETAILS
+          inner join ORDERS O on O.ORDER_ID = ORDER_DETAILS.ORDER_ID
+          inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+        group by O.EMPLOYEE_ID) ORD on ORD.EMPLOYEE_ID = E.EMPLOYEE_ID)
+group by CHIEF_ID,
+  CHIEF_NAME;
