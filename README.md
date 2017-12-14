@@ -1,4 +1,4 @@
-# Tomsk State University, Faculty of Applied Mathematics and Cybernetics, 3 year, Databases
+# Tomsk State University, Faculty of Applied Mathematics and Cybernetics, 3 year, 1 semester, Databases
 
 ## Repository structure
 
