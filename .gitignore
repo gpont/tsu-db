@@ -2,3 +2,4 @@
 oradata/
 src/examples/
 tools/sqlplus.dict
+.idea/
