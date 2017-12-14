@@ -1,184 +1,229 @@
--- 1. Написать функцию,    возвращающую общую стоимость заказов сделанных заданным заказчиком за выбранный период.    Если заказчик не указан или    не заданы, граница периода выводить сообщение об ошибке. Параметры функции: промежуток времени и номер заказчика.
+-- 1. Написать функцию, возвращающую общую стоимость заказов сделанных заданным заказчиком за выбранный период. Если
+-- заказчик не указан или не заданы, граница периода выводить сообщение об ошибке. Параметры функции: промежуток
+-- времени и номер заказчика.
 
-create or replace function get_total_order_price_by(cid in number, from_date in date, to_date in date)
-    return number as total_price number;
-begin
-    if cid is null then
-        dbms_output.put_line('ERROR: customer id is null, exiting');
-        return(null);
+create or replace function get_total_order_price_by(CID in number, FROM_DATE in date, TO_DATE in date)
+  return number as TOTAL_PRICE number;
+  begin
+    if CID is null then
+      DBMS_OUTPUT.put_line('ERROR: customer id is null, exiting');
+      return (null);
     end if;
 
-    if from_date is null then
-        dbms_output.put_line('ERROR: from_date is null, exiting');
-        return(null);
+    if FROM_DATE is null then
+      DBMS_OUTPUT.put_line('ERROR: from_date is null, exiting');
+      return (null);
     end if;
 
-    if to_date is null then
-        dbms_output.put_line('ERROR: to_date is null, exiting');
-        return(null);
+    if TO_DATE is null then
+      DBMS_OUTPUT.put_line('ERROR: to_date is null, exiting');
+      return (null);
     end if;
 
-    select sum(Products.price) into total_price from Orders
-    inner join Order_Details on Order_Details.order_id = Orders.order_id
-    inner join Products on Products.product_id = Order_Details.product_id
-    where customer_id = cid and Order_date > from_date and Order_date < to_date;
+    select sum(PRODUCTS.PRICE)
+    into TOTAL_PRICE
+    from ORDERS
+      inner join ORDER_DETAILS on ORDER_DETAILS.ORDER_ID = ORDERS.ORDER_ID
+      inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+    where CUSTOMER_ID = CID and ORDER_DATE > FROM_DATE and ORDER_DATE < TO_DATE;
 
-    return total_price;
-end get_total_order_price_by;
+    return TOTAL_PRICE;
+  end GET_TOTAL_ORDER_PRICE_BY;
 /
-select get_total_order_price_by(242, to_date('10-07-2017', 'DD-MM-YYYY'), to_date('10-08-2017', 'DD-MM-YYYY')) from Dual;
+select get_total_order_price_by(242, to_date('10-07-2017', 'DD-MM-YYYY'), to_date('10-08-2017', 'DD-MM-YYYY'))
+from DUAL;
 
--- 2. Написать процедуру выводящую маршрут курьера в указанный день. Формат вывода: ФИО курьера и список адресов доставки в формате: “hh:MM - адрес“ через точку с запятой.
+-- 2. Написать процедуру выводящую маршрут курьера в указанный день. Формат вывода: ФИО курьера и список адресов
+-- доставки в формате: “hh:MM - адрес“ через точку с запятой.
 
-create or replace procedure get_courier_route(cid in number, delivery_day in date)
+create or replace procedure GET_COURIER_ROUTE(CID in number, DELIVERY_DAY in date)
 is
-    courier_name Employees.employee_name%TYPE;
-    courier_dd Orders.delivery_date%TYPE;
-    courier_street Locations.street%TYPE;
-    courier_hn Locations.house_number%TYPE;
+  COURIER_NAME   EMPLOYEES.EMPLOYEE_NAME%type;
+  COURIER_DD     ORDERS.DELIVERY_DATE%type;
+  COURIER_STREET LOCATIONS.STREET%type;
+  COURIER_HN     LOCATIONS.HOUSE_NUMBER%type;
 
-    cursor Courier_cursor is
-           select Employees.employee_name, Orders.delivery_date, Locations.street, Locations.house_number
-           from Employees
-                inner join Orders
-                      on Orders.employee_id = Employees.employee_id
-                inner join Locations
-                      on Orders.location_id = Locations.location_id
-           where Employees.employee_id = cid
-             and trunc(delivery_day, 'day') = trunc(Orders.delivery_date, 'day')
-           order by Orders.delivery_date;
+  cursor COURIER_CURSOR is
+    select
+      EMPLOYEES.EMPLOYEE_NAME,
+      ORDERS.DELIVERY_DATE,
+      LOCATIONS.STREET,
+      LOCATIONS.HOUSE_NUMBER
+    from EMPLOYEES
+      inner join ORDERS
+        on ORDERS.EMPLOYEE_ID = EMPLOYEES.EMPLOYEE_ID
+      inner join LOCATIONS
+        on ORDERS.LOCATION_ID = LOCATIONS.LOCATION_ID
+    where EMPLOYEES.EMPLOYEE_ID = CID
+          and trunc(DELIVERY_DAY, 'day') = trunc(ORDERS.DELIVERY_DATE, 'day')
+    order by ORDERS.DELIVERY_DATE;
 
-     id_null exception;
-     date_null exception;
-begin
-    if cid is null then
-         raise id_null;
+    ID_NULL exception;
+    DATE_NULL exception;
+  begin
+    if CID is null then
+      raise ID_NULL;
     end if;
-    if delivery_day is null then
-         raise date_null;
+    if DELIVERY_DAY is null then
+      raise DATE_NULL;
     end if;
 
-    open Courier_cursor;
+    open COURIER_CURSOR;
 
-    fetch Courier_cursor into courier_name, courier_dd, courier_street, courier_hn;
+    fetch COURIER_CURSOR into COURIER_NAME, COURIER_DD, COURIER_STREET, COURIER_HN;
 
-    dbms_output.put_line(courier_name);
-    dbms_output.put(to_char(courier_dd, 'hh:MM') || ' - ' || courier_street || ' ' || courier_hn || ';');
+    DBMS_OUTPUT.put_line(COURIER_NAME);
+    DBMS_OUTPUT.put(to_char(COURIER_DD, 'hh:MM') || ' - ' || COURIER_STREET || ' ' || COURIER_HN || ';');
 
     loop
-        fetch Courier_cursor into courier_name, courier_dd, courier_street, courier_hn;
+      fetch COURIER_CURSOR into COURIER_NAME, COURIER_DD, COURIER_STREET, COURIER_HN;
 
-        exit when Courier_cursor%NOTFOUND;
+      exit when COURIER_CURSOR%notfound;
 
-        dbms_output.put(to_char(courier_dd, 'hh:MM') || ' - ' || courier_street || ' ' || courier_hn || ';');
+      DBMS_OUTPUT.put(to_char(COURIER_DD, 'hh:MM') || ' - ' || COURIER_STREET || ' ' || COURIER_HN || ';');
     end loop;
 
-    dbms_output.new_line;
+    DBMS_OUTPUT.NEW_LINE;
 
-    close Courier_cursor;
-exception
-    when id_null then dbms_output.put_line('id_null is undefined');
-    when date_null then dbms_output.put_line ('date_null is undefined');
-    when others then dbms_output.put_line ('undefined exception');
-end;
+    close COURIER_CURSOR;
+    exception
+    when ID_NULL then DBMS_OUTPUT.put_line('id_null is undefined');
+    when DATE_NULL then DBMS_OUTPUT.put_line('date_null is undefined');
+    when others then DBMS_OUTPUT.put_line('undefined exception');
+  end;
 /
 execute get_courier_route(8, to_date('20-04-2017', 'DD-MM-YYYY'))
 
--- 3. Написать процедуру формирующую список скидок по итогам заданного месяца (месяц считает от введенной даты). Условия:    скидка 10%    на самую часто заказываемую пиццу , скидка 5% на пиццу, которую заказали на самые большую сумму, 15% на пиццу, которые заказывали с    наибольшим числом напитков. Формат вывода: наименование – новая цена, процент скидки.
+-- 3. Написать процедуру формирующую список скидок по итогам заданного месяца (месяц считает от введенной даты).
+-- Условия: скидка 10% на самую часто заказываемую пиццу, скидка 5% на пиццу, которую заказали на самые
+-- большую сумму, 15% на пиццу, которые заказывали с наибольшим числом напитков. Формат вывода: наименование – новая
+-- цена, процент скидки.
 
-create or replace procedure get_sale_products(g_month in date)
+create or replace procedure GET_SALE_PRODUCTS(G_MONTH in date)
 is
-    cursor Popular_Pizzas is
-           select product_name, price from Products
-           where product_id in ( select product_id from Order_Details
-                                 inner join Orders on Orders.order_id = Order_Details.order_id
-                                 where trunc(Orders.order_date, 'month') = trunc(g_month, 'month')
-                                 group by product_id
-                                 having count(*) = ( select max(count(*)) from Order_Details
-                                                     inner join Orders on Orders.order_id = Order_Details.order_id
-                                                     where trunc(Orders.order_date, 'month') = trunc(g_month, 'month')
-                                                     group by product_id
-                                                   ) );
+  cursor POPULAR_PIZZAS is
+    select
+      PRODUCT_NAME,
+      PRICE
+    from PRODUCTS
+    where PRODUCT_ID in (
+      select PRODUCT_ID
+      from ORDER_DETAILS
+        inner join ORDERS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+      where trunc(ORDERS.ORDER_DATE, 'month') = trunc(G_MONTH, 'month')
+      group by PRODUCT_ID
+      having count(*) = (
+        select max(count(*))
+        from ORDER_DETAILS
+          inner join ORDERS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+        where trunc(ORDERS.ORDER_DATE, 'month') = trunc(G_MONTH, 'month')
+        group by PRODUCT_ID
+      ));
 
-    cursor Most_Expensive_Pizzas is
-            with Pizza_Aggr as (
-                select Order_Details.order_id, Products.product_id, sum(Products.price * Order_Details.quantity) as total_pizza_price from Order_Details
-                            inner join Products on Order_Details.product_id = Products.product_id
-                            inner join Orders on Order_Details.order_id = Orders.order_id
-                where Products.category_id = 1
-                    and trunc(Orders.order_date, 'month') = trunc(g_month, 'month')
-                group by Products.product_id, Order_Details.order_id
-                order by total_pizza_price
-            )
-            select distinct product_name, price from Pizza_Aggr
-                         inner join Products on Products.product_id = Pizza_Aggr.product_id
-            where total_pizza_price = (
-                        select max(total_pizza_price) from Pizza_Aggr
-            );
+  cursor MOST_EXPENSIVE_PIZZAS is
+    with PIZZA_AGGR as (
+        select
+          ORDER_DETAILS.ORDER_ID,
+          PRODUCTS.PRODUCT_ID,
+          sum(PRODUCTS.PRICE * ORDER_DETAILS.QUANTITY) as TOTAL_PIZZA_PRICE
+        from ORDER_DETAILS
+          inner join PRODUCTS on ORDER_DETAILS.PRODUCT_ID = PRODUCTS.PRODUCT_ID
+          inner join ORDERS on ORDER_DETAILS.ORDER_ID = ORDERS.ORDER_ID
+        where PRODUCTS.CATEGORY_ID = 1
+              and trunc(ORDERS.ORDER_DATE, 'month') = trunc(G_MONTH, 'month')
+        group by PRODUCTS.PRODUCT_ID, ORDER_DETAILS.ORDER_ID
+        order by TOTAL_PIZZA_PRICE
+    )
+    select distinct
+      PRODUCT_NAME,
+      PRICE
+    from PIZZA_AGGR
+      inner join PRODUCTS on PRODUCTS.PRODUCT_ID = PIZZA_AGGR.PRODUCT_ID
+    where TOTAL_PIZZA_PRICE = (
+      select max(TOTAL_PIZZA_PRICE)
+      from PIZZA_AGGR
+    );
 
-     cursor Pizzas_With_Most_Drinks is
-            with Drinks_Aggr as (
-                select Order_Details.order_id, sum(Order_Details.quantity) as total_drinks from Order_Details
-                inner join Products on Products.product_id = Order_Details.product_id
-                inner join Orders on Orders.order_id = Order_Details.order_id
-                where Products.category_id = 2 and Order_Details.order_id in (
-                    select order_id from Order_Details
-                    inner join Products on Products.product_id = Order_Details.product_id
-                    where Products.category_id = 1 and trunc(Orders.order_date, 'month') = trunc(g_month, 'month')
-                ) and trunc(Orders.order_date, 'month') = trunc(g_month, 'month')
-                group by Order_Details.order_id
-            )
-            select distinct q.product_name, q.price from Drinks_Aggr
-            inner join ( select Products.product_id, order_id, product_name, price from Products
-                          inner join Order_Details on Order_Details.product_id = Products.product_id
-                          where Products.category_id = 1
-                        ) q on Drinks_Aggr.order_id = q.order_id
-            where total_drinks in (select max(total_drinks) from Drinks_Aggr) and Drinks_Aggr.order_id in (select order_id from Drinks_Aggr);
+  cursor PIZZAS_WITH_MOST_DRINKS is
+    with DRINKS_AGGR as (
+        select
+          ORDER_DETAILS.ORDER_ID,
+          sum(ORDER_DETAILS.QUANTITY) as TOTAL_DRINKS
+        from ORDER_DETAILS
+          inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+          inner join ORDERS on ORDERS.ORDER_ID = ORDER_DETAILS.ORDER_ID
+        where PRODUCTS.CATEGORY_ID = 2 and ORDER_DETAILS.ORDER_ID in (
+          select ORDER_ID
+          from ORDER_DETAILS
+            inner join PRODUCTS on PRODUCTS.PRODUCT_ID = ORDER_DETAILS.PRODUCT_ID
+          where PRODUCTS.CATEGORY_ID = 1 and trunc(ORDERS.ORDER_DATE, 'month') = trunc(G_MONTH, 'month')
+        ) and trunc(ORDERS.ORDER_DATE, 'month') = trunc(G_MONTH, 'month')
+        group by ORDER_DETAILS.ORDER_ID
+    )
+    select distinct
+      Q.PRODUCT_NAME,
+      Q.PRICE
+    from DRINKS_AGGR
+      inner join (
+                   select
+                     PRODUCTS.PRODUCT_ID,
+                     ORDER_ID,
+                     PRODUCT_NAME,
+                     PRICE
+                   from PRODUCTS
+                     inner join ORDER_DETAILS on ORDER_DETAILS.PRODUCT_ID = PRODUCTS.PRODUCT_ID
+                   where PRODUCTS.CATEGORY_ID = 1
+                 ) Q on DRINKS_AGGR.ORDER_ID = Q.ORDER_ID
+    where TOTAL_DRINKS in (
+      select max(TOTAL_DRINKS)
+      from DRINKS_AGGR) and DRINKS_AGGR.ORDER_ID in (
+      select ORDER_ID
+      from DRINKS_AGGR);
 
-    l_product_name Products.product_name%TYPE;
-    l_price Products.price%TYPE;
+  L_PRODUCT_NAME PRODUCTS.PRODUCT_NAME%type;
+  L_PRICE        PRODUCTS.PRICE%type;
 
-    g_month_null exception;
-begin
-    if g_month is null then
-         raise g_month_null;
+    G_MONTH_NULL exception;
+  begin
+    if G_MONTH is null then
+      raise G_MONTH_NULL;
     end if;
 
-    open Popular_Pizzas;
-    dbms_output.put_line('popular');
+    open POPULAR_PIZZAS;
+    DBMS_OUTPUT.put_line('popular');
     loop
-        fetch Popular_Pizzas into l_product_name, l_price;
+      fetch POPULAR_PIZZAS into L_PRODUCT_NAME, L_PRICE;
 
-        exit when Popular_Pizzas%NOTFOUND;
+      exit when POPULAR_PIZZAS%notfound;
 
-        dbms_output.put_line(l_product_name || ' - ' || l_price * 0.9 || ', 10%');
+      DBMS_OUTPUT.put_line(L_PRODUCT_NAME || ' - ' || L_PRICE * 0.9 || ', 10%');
     end loop;
-    close Popular_Pizzas;
+    close POPULAR_PIZZAS;
 
-    open Most_Expensive_Pizzas;
-    dbms_output.put_line('most expensive');
+    open MOST_EXPENSIVE_PIZZAS;
+    DBMS_OUTPUT.put_line('most expensive');
     loop
-        fetch Most_Expensive_Pizzas into l_product_name, l_price;
+      fetch MOST_EXPENSIVE_PIZZAS into L_PRODUCT_NAME, L_PRICE;
 
-        exit when Most_Expensive_Pizzas%NOTFOUND;
+      exit when MOST_EXPENSIVE_PIZZAS%notfound;
 
-        dbms_output.put_line(l_product_name || ' - ' || l_price * 0.95 || ', 5%');
+      DBMS_OUTPUT.put_line(L_PRODUCT_NAME || ' - ' || L_PRICE * 0.95 || ', 5%');
     end loop;
-    close Most_Expensive_Pizzas;
+    close MOST_EXPENSIVE_PIZZAS;
 
-    open Pizzas_With_Most_Drinks;
-    dbms_output.put_line('with most drinks');
+    open PIZZAS_WITH_MOST_DRINKS;
+    DBMS_OUTPUT.put_line('with most drinks');
     loop
-        fetch Pizzas_With_Most_Drinks into l_product_name, l_price;
+      fetch PIZZAS_WITH_MOST_DRINKS into L_PRODUCT_NAME, L_PRICE;
 
-        exit when Pizzas_With_Most_Drinks%NOTFOUND;
+      exit when PIZZAS_WITH_MOST_DRINKS%notfound;
 
-        dbms_output.put_line(l_product_name || ' - ' || l_price * 0.85 || ', 15%');
+      DBMS_OUTPUT.put_line(L_PRODUCT_NAME || ' - ' || L_PRICE * 0.85 || ', 15%');
     end loop;
-    close Pizzas_With_Most_Drinks;
+    close PIZZAS_WITH_MOST_DRINKS;
 
-exception
-    when g_month_null then dbms_output.put_line('g_month is null');
-end;
+    exception
+    when G_MONTH_NULL then DBMS_OUTPUT.put_line('g_month is null');
+  end;
 /
 execute get_sale_products(to_date('20-04-2017', 'DD-MM-YYYY'));
