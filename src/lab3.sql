@@ -6,18 +6,24 @@ create or replace function get_total_order_price_by(CID in number, FROM_DATE in 
   return number as TOTAL_PRICE number;
   begin
     if CID is null then
-      DBMS_OUTPUT.put_line('ERROR: customer id is null, exiting');
-      return (null);
+      RAISE_APPLICATION_ERROR(
+          -20002,
+          'ERROR: customer id is null'
+      );
     end if;
 
     if FROM_DATE is null then
-      DBMS_OUTPUT.put_line('ERROR: from_date is null, exiting');
-      return (null);
+      RAISE_APPLICATION_ERROR(
+          -20003,
+          'ERROR: from_date is null'
+      );
     end if;
 
     if TO_DATE is null then
-      DBMS_OUTPUT.put_line('ERROR: to_date is null, exiting');
-      return (null);
+      RAISE_APPLICATION_ERROR(
+          -20004,
+          'ERROR: to_date is null'
+      );
     end if;
 
     select sum(PRODUCTS.PRICE)
@@ -87,9 +93,9 @@ is
 
     close COURIER_CURSOR;
     exception
-    when ID_NULL then DBMS_OUTPUT.put_line('id_null is undefined');
-    when DATE_NULL then DBMS_OUTPUT.put_line('date_null is undefined');
-    when others then DBMS_OUTPUT.put_line('undefined exception');
+    when ID_NULL then DBMS_OUTPUT.put_line('ERROR: id_null is undefined');
+    when DATE_NULL then DBMS_OUTPUT.put_line('ERROR: date_null is undefined');
+    when others then DBMS_OUTPUT.put_line('ERROR: undefined exception');
   end;
 /
 execute get_courier_route(8, to_date('20-04-2017', 'DD-MM-YYYY'))
