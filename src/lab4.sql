@@ -41,24 +41,35 @@ create or replace trigger EMPLOYEES_STATS_TRIGGER
   on EMPLOYEES
   for each row
   declare
-    NEW_TYPE_CHANGE varchar2;
+    NEW_TYPE_CHANGE varchar2(10);
     LAST_CHANGE     date;
+    CURRENT_ID      number;
   begin
     -- get last change date
-    select LAST_CHANGE = DATE_CHANGE
-    from EMPLOYEES_STATS
-    order by DATE_CHANGE
-    desc;
+    select (
+      select DATE_CHANGE
+      from (
+        select DATE_CHANGE
+        from EMPLOYEES_STATS
+        order by DATE_CHANGE desc
+      )
+      where ROWNUM = 1
+    )
+    into LAST_CHANGE
+    from DUAL;
 
     if inserting
     then
       NEW_TYPE_CHANGE := 'insert';
+      CURRENT_ID := :NEW.EMPLOYEE_ID;
     elsif updating
-      then
-        NEW_TYPE_CHANGE := 'update';
+    then
+      NEW_TYPE_CHANGE := 'update';
+      CURRENT_ID := :OLD.EMPLOYEE_ID;
     elsif deleting
-      then
-        NEW_TYPE_CHANGE := 'delete';
+    then
+      NEW_TYPE_CHANGE := 'delete';
+      CURRENT_ID := :OLD.EMPLOYEE_ID;
     end if;
 
     insert into EMPLOYEES_STATS (
@@ -66,12 +77,14 @@ create or replace trigger EMPLOYEES_STATS_TRIGGER
       DATE_CHANGE,
       TYPE_CHANGE
     ) values (
-      :NEW.EMPLOYEE_ID,
+      CURRENT_ID,
       sysdate,
       NEW_TYPE_CHANGE
     );
 
-    DBMS_OUTPUT.put_line('INFO: ' || (days(sysdate) - days(LAST_CHANGE)) || ' days have passed since the last change');
+    if LAST_CHANGE is not null then
+      DBMS_OUTPUT.put_line('INFO: ' || trunc(sysdate - LAST_CHANGE) || ' days have passed since the last change');
+    end if;
   end;
 
 -- 3. Добавить к таблице `Orders` не обязательное поле `cipher`, которое должно заполняться автоматически согласно шаблону: `<YYYYMMDD> - <номер район> - <номер заказа в рамках месяца>`. Номера не обязательно должны соответствовать дате заказа, если район не известен, то “ номер района” равен 0.
@@ -81,14 +94,14 @@ alter table ORDERS
   drop column CIPHER;
 
 alter table ORDERS
-  add CIPHER varchar2(24);
+  add CIPHER varchar2(32);
 
 create or replace trigger ORDERS_TRIGGER
   after insert
   on ORDERS
   for each row
   declare
-    CIPHER_STR   varchar2;
+    CIPHER_STR   varchar2(32);
     ORDER_NUMBER int;
   begin
     -- getting order number within the order month
@@ -107,3 +120,4 @@ create or replace trigger ORDERS_TRIGGER
     set CIPHER = CIPHER_STR
     where ORDER_ID = :NEW.ORDER_ID;
   end;
+/
