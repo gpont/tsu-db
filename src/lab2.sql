@@ -86,11 +86,23 @@ create or replace view COURIER_ROUTE(EMPLOYEE_ID, EMPLOYEE_NAME, STREET, LOCATIO
 -- адресу.
 
 alter table ORDERS
-  modify ( EMPLOYEE_ID int not null);
+  modify (
+  EMPLOYEE_ID int not null
+  foreign key (employee_id)
+  references Employees
+  );
 alter table ORDERS
-  modify ( LOCATION_ID int not null);
+  modify (
+  LOCATION_ID int not null
+  foreign key (location_id)
+  references Locations
+  );
 alter table ORDER_DETAILS
-  modify ( PRODUCT_ID int not null);
+  modify (
+  PRODUCT_ID int not null
+  foreign key (product_id)
+  references Products
+  );
 
 -- 2.2. Начальником может быть только реально существующий сотрудник.
 
@@ -155,28 +167,43 @@ create table CONTACTS (
   LOCATION_ID int not null,
   EMPLOYEE_ID int not null,
   PHONE       varchar(20),
-  APARTMENT   int constraint CONTACT_PK primary key (contact_id)
+  APARTMENT   int
+    constraint CONTACT_PK primary key (contact_id);
 );
+
+create sequence NUM
+  increment by 1
+  start with 1;
+
+insert into CONTACTS (CONTACT_ID, LOCATION_ID, EMPLOYEE_ID, PHONE, APARTMENT)
+  select
+    NUM.NEXTVAL,
+    LOCATIONS.LOCATION_ID,
+    EMPLOYEES.EMPLOYEE_ID,
+    PHONE,
+    APARTMENT
+  from EMPLOYEES
+    inner join LOCATIONS on LOCATIONS.STREET = EMPLOYEES.STREET and LOCATIONS.HOUSE_NUMBER = EMPLOYEES.HOUSE_NUMBER;
 
 -- 4. Добавить информацию о составе продуктов. Один продукт может содержать несколько компонентов, но в составе
 -- отдельно продукта каждый компонент  может быть указан только один раз. Требуется описать только состав, точные
 -- рецепт с весом не требуется.
 
-create table PRODUCTS_INGREDIENTS add (
-  product_ingredients_id int,
-  product_id int,
-  ingredient_id int,
-constraint product_ingredients_pk primary key (
-  product_ingredients_id, ingredient_id
-),
-constraint product_fk foreign key (
-  product_id
-) references Products (product_id
-),
-constraint ingredient_fk foreign key (
-  ingredient_id
-) references Ingredient (ingredient_id
-)
+create table PRODUCTS_INGREDIENTS (
+  PRODUCT_INGREDIENTS_ID int,
+  PRODUCT_ID             int,
+  INGREDIENT_ID          int,
+  constraint PRODUCT_INGREDIENTS_PK primary key (
+    PRODUCT_INGREDIENTS_ID, INGREDIENT_ID
+  ),
+  constraint PRODUCT_FK foreign key (
+    PRODUCT_ID
+  ) references PRODUCTS (PRODUCT_ID
+  ),
+  constraint INGREDIENT_FK foreign key (
+    INGREDIENT_ID
+  ) references INGREDIENT (INGREDIENT_ID
+  )
 );
 
 create table INGREDIENT (
