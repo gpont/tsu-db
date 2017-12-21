@@ -21,7 +21,7 @@ create table EMPLOYEES (
 
 create table DISEASES
 (
-  DISEASE_ID int primary key,
+  DISEASE_ID int,
   NAME       varchar2(64) not null,
   constraint PK_SICK_ID primary key (DISEASE_ID)
 );
@@ -30,7 +30,7 @@ create table HOSPITAL_SHEETS
 (
   HS_ID       int primary key,
   DATE_START  date not null,
-  DURATION    date not null,
+  DURATION    int, -- in days
   DISEASE_ID  int  not null,
   EMPLOYEE_ID int  not null,
   constraint FK_DISEASE_ID foreign key (DISEASE_ID) references DISEASES (DISEASE_ID),
@@ -53,8 +53,8 @@ create table EMPLOYEES_SALARY_INCREMENTS (
   EMPLOYEE_ID  int,
   -- 6. Создать индекс для таблицы `Сотрудники_надбавки` содержащий 2 поля.
   constraint PK_IDS primary key (INCREMENT_ID, EMPLOYEE_ID),
-  constraint FK_INCREMENT_ID foreign key (INCREMENT_ID) references SALARY_INCREMENTS (INCREMENT_ID),
-  constraint FK_EMPLOYEE_ID foreign key (EMPLOYEE_ID) references EMPLOYEES (EMPLOYEE_ID)
+  constraint FK_SALARY_INCREMENT_ID foreign key (INCREMENT_ID) references SALARY_INCREMENTS (INCREMENT_ID),
+  constraint FK_EMPLOYEE_INCREMENT_ID foreign key (EMPLOYEE_ID) references EMPLOYEES (EMPLOYEE_ID)
 );
 
 -- 2. Заполнить созданные таблицы данными, 5-10 записей для каждой таблицы.
@@ -95,25 +95,25 @@ insert into DISEASES (DISEASE_ID, NAME) values (10, 'Stomach cancer');
 
 -- HOSPITAL_SHEETS filling
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (1, '1/15/2017', '4/28/0001', 10, 10);
+values (1, to_date('1/15/2017', 'mm/dd/yyyy'), 30, 10, 10);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (2, '2/26/2017', '11/17/0000', 1, 6);
+values (2, to_date('2/26/2017', 'mm/dd/yyyy'), 100, 1, 6);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (3, '5/31/2017', '5/2/0000', 10, 1);
+values (3, to_date('5/31/2017', 'mm/dd/yyyy'), 10, 10, 1);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (4, '12/12/2017', '12/25/0000', 8, 3);
+values (4, to_date('12/12/2017', 'mm/dd/yyyy'), 15, 8, 3);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (5, '2/25/2017', '4/17/0000', 3, 8);
+values (5, to_date('2/25/2017', 'mm/dd/yyyy'), 3, 3, 8);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (6, '10/14/2017', '9/19/0001', 9, 1);
+values (6, to_date('10/14/2017', 'mm/dd/yyyy'), 43, 9, 1);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (7, '7/28/2017', '4/14/0000', 3, 2);
+values (7, to_date('7/28/2017', 'mm/dd/yyyy'), 38, 3, 2);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (8, '3/29/2017', '2/14/0001', 3, 6);
+values (8, to_date('3/29/2017', 'mm/dd/yyyy'), 55, 3, 6);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (9, '3/7/2017', '12/27/0001', 9, 4);
+values (9, to_date('3/7/2017', 'mm/dd/yyyy'), 54, 9, 4);
 insert into HOSPITAL_SHEETS (HS_ID, DATE_START, DURATION, DISEASE_ID, EMPLOYEE_ID)
-values (10, '3/31/2017', '3/27/0001', 10, 1);
+values (10, to_date('3/31/2017', 'mm/dd/yyyy'), 2, 10, 1);
 
 -- SALARY_INCREMENTS filling
 insert into SALARY_INCREMENTS (INCREMENT_ID, NAME, INC_VALUE)
@@ -182,7 +182,8 @@ group by FAMILY_STATUS;
 select
   NAME,
   SALARY,
-  EMPLOYEES.POSITION
+  EMPLOYEES.POSITION,
+  AVG_SALARY
 from EMPLOYEES
   inner join (
                select
@@ -190,13 +191,13 @@ from EMPLOYEES
                  avg(SALARY) as AVG_SALARY
                from EMPLOYEES
                group by POSITION
-             ) AVG_SAL on AVG_SAL.POSITION = EMPLOYEES.POSITION and AVG_SAL.AVG_SALARY < EMPLOYEES.SALARY;
+             ) AVG_SAL on AVG_SAL.POSITION = EMPLOYEES.POSITION and AVG_SAL.AVG_SALARY > EMPLOYEES.SALARY;
 
 -- 3.5. Вывести список болезней которыми болели суммарно не более 2-х сотрудников
 
 select
   NAME,
-  count(DIS_STATS.EMP_COUNT)
+  DIS_STATS.EMP_COUNT
 from DISEASES
   inner join (
                select
@@ -204,8 +205,8 @@ from DISEASES
                  count(EMPLOYEE_ID) as EMP_COUNT
                from HOSPITAL_SHEETS
                group by DISEASE_ID
-             ) DIS_STATS on DIS_STATS.EMP_COUNT <= 2
-group by DISEASES.NAME;
+             ) DIS_STATS on DIS_STATS.EMP_COUNT <= 2 and DIS_STATS.DISEASE_ID = DISEASES.DISEASE_ID
+group by DISEASES.NAME, DIS_STATS.EMP_COUNT;
 
 -- 4. Изменений данных.
 
@@ -242,11 +243,11 @@ create or replace view DISEASES_EMPLOYEES(NAME, ALL_DAYS)
   as
     select
       NAME,
-      extract(day from sum(HS.DURATION)) as ALL_DAYS
+      sum(HS.DURATION) as ALL_DAYS
     from EMPLOYEES
       inner join HOSPITAL_SHEETS HS on EMPLOYEES.EMPLOYEE_ID = HS.EMPLOYEE_ID
     group by NAME
-    having sum(HS.DURATION) > to_date('3', 'mm');
+    having sum(HS.DURATION) > 30 * 3;
 
 -- 5.2. Сформировать зарплатную ведомость, просуммировав оклад и все надбавки + 30% районный коэффициент, минус
 -- подоходный налог 13% и профсоюзный взнос 1%. Ведомость оформить в виде представления, содержащего табельный номер,
@@ -257,11 +258,12 @@ create or replace view SALARY_REPORT(EMPLOYEE_ID, NAME, SALARY_FULL, SALARY_AFTE
     select
       EMPLOYEES.EMPLOYEE_ID,
       EMPLOYEES.NAME,
-      (EMPLOYEES.SALARY + sum(S.INC_VALUE)) * 1.3 as SALARY_FULL,
-      (EMPLOYEES.SALARY + sum(S.INC_VALUE)) * 1.3 * 0.86  as SALARY_AFTER_TAXES
+      (EMPLOYEES.SALARY + sum(S.INC_VALUE)) * 1.3        as SALARY_FULL,
+      (EMPLOYEES.SALARY + sum(S.INC_VALUE)) * 1.3 * 0.86 as SALARY_AFTER_TAXES
     from EMPLOYEES
-      inner join EMPLOYEES_SALARY_INCREMENTS ESI on EMPLOYEES.EMPLOYEE_ID = E.EMPLOYEE_ID
-      inner join SALARY_INCREMENTS S on ESI.INCREMENT_ID = S.INCREMENT_ID;
+      inner join EMPLOYEES_SALARY_INCREMENTS ESI on EMPLOYEES.EMPLOYEE_ID = ESI.EMPLOYEE_ID
+      inner join SALARY_INCREMENTS S on ESI.INCREMENT_ID = S.INCREMENT_ID
+    group by EMPLOYEES.EMPLOYEE_ID, EMPLOYEES.NAME, EMPLOYEES.SALARY;
 
 -- 6. Создать индекс для таблицы `Сотрудники_надбавки` содержащий 2 поля.
 -- Go to creating table EMPLOYEES_SALARY_INCREMENTS
@@ -269,7 +271,8 @@ create or replace view SALARY_REPORT(EMPLOYEE_ID, NAME, SALARY_FULL, SALARY_AFTE
 -- 7. Создать пакет, состоящий из процедуры и функций, включить обработчики исключительных ситуаций.
 
 create or replace package EMPLOYEES_FUNCTIONS as
-  function COUNT_HOSPITAL_SHEETS(EMPLOYEE_ID int, DATE_START date, DATE_END date) return int;
+  function COUNT_HOSPITAL_SHEETS(EMPLOYEE_ID int, DATE_START date, DATE_END date)
+    return int;
 end EMPLOYEES_FUNCTIONS;
 
 create or replace package body EMPLOYEES_FUNCTIONS as
@@ -302,17 +305,17 @@ create or replace package body EMPLOYEES_FUNCTIONS as
   -- 7.2. Функция формирует список сотрудников болевших в течение года (Табельный номер и год – аргументы функции).
   -- Формат вывода: `Табельный номер и ФИО сотрудника: список болезней.`
 
-  procedure EMPLOYEES_HS_REPORT(ARG_EMPLOYEE_ID int, ARG_YEAR date)
+  procedure EMPLOYEES_HS_REPORT(ARG_EMPLOYEE_ID int, ARG_YEAR int)
   as
     cursor EMPLOYEES_CURSOR is
       select
         EMPLOYEES.EMPLOYEE_ID,
         EMPLOYEES.NAME,
-        DISEASES.NAME as DISEASE_NAME
+        D.NAME as DISEASE_NAME
       from EMPLOYEES
         inner join HOSPITAL_SHEETS HS on EMPLOYEES.EMPLOYEE_ID = HS.EMPLOYEE_ID
         inner join DISEASES D on HS.DISEASE_ID = D.DISEASE_ID
-      where extract(month from HS.DATE_START) >= ARG_YEAR
+      where extract(year from HS.DATE_START) >= ARG_YEAR
             and EMPLOYEES.EMPLOYEE_ID = ARG_EMPLOYEE_ID
       order by EMPLOYEES.EMPLOYEE_ID;
     OLD_ID int;
@@ -336,9 +339,9 @@ create or replace package body EMPLOYEES_FUNCTIONS as
           DBMS_OUTPUT.put_line(RECORD.EMPLOYEE_ID || ' ' || RECORD.NAME || ': ');
         end if;
         DBMS_OUTPUT.put_line(RECORD.DISEASE_NAME || ', ');
-
         OLD_ID := RECORD.EMPLOYEE_ID;
       end loop;
+
       exception
       when ARG_EMPLOYEE_ID_NULL
       then
@@ -351,16 +354,42 @@ create or replace package body EMPLOYEES_FUNCTIONS as
   -- 7.3. Процедура выдает информацию по всем болезням, которыми болели сотрудники более 2. Формат вывода: ФИО
   -- сотрудника и список болезней.
 
+  procedure DISEASES_HS_REPORT
+  as
+    cursor DISEASES_CURSOR is
+      select
+        E.EMPLOYEE_ID,
+        E.NAME        as EMPLOYEE_NAME,
+        DISEASES.NAME as DISEASE_NAME
+      from DISEASES
+        inner join HOSPITAL_SHEETS HS on DISEASES.DISEASE_ID = HS.DISEASE_ID
+        inner join EMPLOYEES E on E.EMPLOYEE_ID = HS.EMPLOYEE_ID
+      group by DISEASES.NAME, E.EMPLOYEE_ID, E.NAME
+      having count(E.EMPLOYEE_ID) > 2
+      order by E.NAME;
+    OLD_ID int;
+    begin
+      for RECORD in DISEASES_CURSOR
+      loop
+        if RECORD.EMPLOYEE_ID != OLD_ID
+        then
+          DBMS_OUTPUT.put_line(RECORD.EMPLOYEE_NAME || ': ');
+        end if;
+        DBMS_OUTPUT.put_line(RECORD.DISEASE_NAME || ', ');
+        OLD_ID := RECORD.EMPLOYEE_ID;
+      end loop;
+    end;
+
 end EMPLOYEES_FUNCTIONS;
 
 -- 8. Создать пакет, состоящий из триггеров, включить обработчики исключительных ситуаций.
 
 create or replace package EMPLOYEES_TRIGGERS as
-  procedure CHECK_TRIGGER_PROC(POSITION varchar2(32), SALARY int);
-  procedure EMPLOYEES_STATS_TRIGGER_PROC(NEW_TYPE_CHANGE varchar2(10), CURRENT_ID number);
+  procedure CHECK_TRIGGER_PROC(NEW_POSITION varchar2, NEW_SALARY int);
+  procedure EMPLOYEES_STATS_TRIGGER_PROC(NEW_TYPE_CHANGE varchar2, CURRENT_ID number);
 end EMPLOYEES_TRIGGERS;
 
-create package body EMPLOYEES_TRIGGERS as
+create or replace package body EMPLOYEES_TRIGGERS as
 
   -- 8.1. Триггер, активизирующийся при изменении содержимого таблицы `Сотрудники` и проверяющий, чтобы должность
   -- была из допустимого списка должностей и поле оклад заполнялось автоматически в зависимости от должности, в
@@ -371,7 +400,7 @@ create package body EMPLOYEES_TRIGGERS as
   -- Разнорабочий     - 2000
   -- Специалист       - 4000
 
-  procedure CHECK_TRIGGER_PROC(NEW_POSITION varchar2(32), NEW_SALARY int)
+  procedure CHECK_TRIGGER_PROC(NEW_POSITION varchar2, NEW_SALARY int)
   as
     POSITION_SALARY_EXIST number;
       BAD_SALARY exception;
@@ -382,7 +411,7 @@ create package body EMPLOYEES_TRIGGERS as
       where POSITION = NEW_POSITION
             and SALARY = NEW_SALARY;
 
-      if POSITION_SALARY_EXIST
+      if POSITION_SALARY_EXIST = 1
       then
         raise BAD_SALARY;
       end if;
@@ -396,7 +425,7 @@ create package body EMPLOYEES_TRIGGERS as
   -- хранится дата изменения, тип изменения (`insert`, `update`, `delete`). Триггер также выводит на экран сообщение с
   -- указанием количества дней прошедших со дня последнего изменения.
 
-  procedure EMPLOYEES_STATS_TRIGGER_PROC(NEW_TYPE_CHANGE varchar2(10), CURRENT_ID number)
+  procedure EMPLOYEES_STATS_TRIGGER_PROC(NEW_TYPE_CHANGE varchar2, CURRENT_ID number)
   as
     LAST_CHANGE date;
     begin
@@ -432,7 +461,7 @@ end EMPLOYEES_TRIGGERS;
 
 -- create and fill table for salary check
 create table POSITIONS_SALARY (
-  POSITION varchar2(24),
+  POSITION varchar2(32),
   SALARY   int not null
 );
 insert into POSITIONS_SALARY (POSITION, SALARY) values ('Инженер', 5000);
